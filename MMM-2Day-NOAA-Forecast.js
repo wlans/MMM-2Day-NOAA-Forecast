@@ -82,9 +82,8 @@ Module.register("MMM-2Day-NOAA-Forecast", {
         forecastDayNight.className = "forecast-day-night";
 
         let forecastIcon = document.createElement("i");
-        forecastIcon.className = `fa fa-${
-          this.iconMap[this.forecast[i].icon][this.forecast[i].isDay ? 0 : 1]
-        } fa-2x forecast-icon`;
+        forecastIcon.className = `fa fa-${this.iconMap[this.forecast[i].icon][this.forecast[i].isDay ? 0 : 1]
+          } fa-2x forecast-icon`;
         forecastIcon.setAttribute("height", "50");
         forecastIcon.setAttribute("width", "50");
 
@@ -111,11 +110,10 @@ Module.register("MMM-2Day-NOAA-Forecast", {
 
         // Build up the details regarding temprature
         let tempIcon = document.createElement("i");
-        tempIcon.className = `fa ${
-          this.forecast[i].isDay
+        tempIcon.className = `fa ${this.forecast[i].isDay
             ? "fa-temperature-three-quarters"
             : "fa-temperature-quarter"
-        } fa-fw detail-icon`;
+          } fa-fw detail-icon`;
         tempIcon.setAttribute("height", "15");
         tempIcon.setAttribute("width", "15");
 
@@ -158,9 +156,8 @@ Module.register("MMM-2Day-NOAA-Forecast", {
 
         let windText = document.createElement("span");
         windText.className = "detail-text";
-        windText.innerHTML = `${this.convertWindSpeed(this.forecast[i].wspd)} ${
-          this.forecast[i].wdir
-        }`;
+        windText.innerHTML = `${this.convertWindSpeed(this.forecast[i].wspd)} ${this.forecast[i].wdir
+          }`;
 
         // Now assemble the details
         forecastDetail.appendChild(tempIcon);
@@ -253,11 +250,16 @@ Module.register("MMM-2Day-NOAA-Forecast", {
   },
 
   convertTemp: function (temp) {
-    // convert F -> C
-    return this.units === "metric"
-      ? `${Math.round(((temp - 32) * 5) / 9)} &deg;C`
-      : `${Math.round(temp)} &deg;F`;
+    let celsius = Math.round(((temp - 32) * 5) / 9);
+    let fahrenheit = Math.round(temp);
+
+    if (this.units === "metric") {
+      return `${celsius} °C / ${fahrenheit} °F`;
+    } else {
+      return `${fahrenheit} °F / ${celsius} °C`;
+    }
   },
+
 
   convertWindSpeed: function (wspd) {
     // convert mph -> m/s
