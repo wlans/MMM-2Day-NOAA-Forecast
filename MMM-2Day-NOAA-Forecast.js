@@ -31,163 +31,29 @@ Module.register("MMM-2Day-NOAA-Forecast", {
   },
 
   getDom: function () {
-    // Set up the local wrapper
     let wrapper = null;
 
     // If we have some data to display then build the results
     if (this.loaded) {
-      wrapper = document.createElement("table");
-      wrapper.className = "forecast small";
-      wrapper.style.cssText = "border-spacing: 5px";
+      // Create a wrapper for the headline (top bar)
+      wrapper = document.createElement("div");
+      wrapper.className = "forecast-top-bar";
 
-      // title
-      var forecastRow1 = document.createElement("tr");
-
-      if (this.forecast[0].isDay) {
-        let forecastToday = document.createElement("th");
-        forecastToday.className = "forecast-title";
-        forecastToday.colSpan = "2";
-        forecastToday.innerHTML = "Today";
-
-        let forecastTomorrow = document.createElement("th");
-        forecastTomorrow.className = "forecast-title";
-        forecastTomorrow.colSpan = "2";
-        forecastTomorrow.innerHTML = "Tomorrow";
-
-        forecastRow1.appendChild(forecastToday);
-        forecastRow1.appendChild(forecastTomorrow);
+      // Display the headline if available
+      if (this.forecast.headline) {
+        wrapper.innerHTML = `<strong>Headline:</strong> ${this.forecast.headline}`;
       } else {
-        let forecastToday = document.createElement("th");
-        forecastToday.className = "forecast-title";
-        forecastToday.innerHTML = "Today";
-
-        let forecastTomorrow = document.createElement("th");
-        forecastTomorrow.className = "forecast-title";
-        forecastTomorrow.colSpan = "2";
-        forecastTomorrow.innerHTML = "Tomorrow";
-
-        let forecastAfter = document.createElement("th");
-        forecastAfter.className = "forecast-title";
-        forecastAfter.innerHTML = "Day After";
-
-        forecastRow1.appendChild(forecastToday);
-        forecastRow1.appendChild(forecastTomorrow);
-        forecastRow1.appendChild(forecastAfter);
+        wrapper.innerHTML = "No weather alerts at the moment.";
       }
-
-      // icons
-      let forecastRow2 = document.createElement("tr");
-      for (var i = 0; i < 4; i++) {
-        let forecastDayNight = document.createElement("td");
-        forecastDayNight.className = "forecast-day-night";
-
-        let forecastIcon = document.createElement("i");
-        forecastIcon.className = `fa fa-${this.iconMap[this.forecast[i].icon][this.forecast[i].isDay ? 0 : 1]
-          } fa-2x forecast-icon`;
-        forecastIcon.setAttribute("height", "50");
-        forecastIcon.setAttribute("width", "50");
-
-        forecastDayNight.appendChild(forecastIcon);
-
-        forecastRow2.appendChild(forecastDayNight);
-      }
-
-      // text
-      let forecastRow3 = document.createElement("tr");
-      for (let i = 0; i < 4; i++) {
-        let forecastText = document.createElement("td");
-        forecastText.className = "forecast-text horizontalView bright";
-        forecastText.innerHTML = this.forecast[i].conditions;
-
-        forecastRow3.appendChild(forecastText);
-      }
-
-      // details
-      let forecastRow4 = document.createElement("tr");
-      for (let i = 0; i < 4; i++) {
-        let forecastDetail = document.createElement("td");
-        forecastDetail.className = "forecast-detail";
-
-        // Build up the details regarding temprature
-        let tempIcon = document.createElement("i");
-        tempIcon.className = `fa ${this.forecast[i].isDay
-            ? "fa-temperature-three-quarters"
-            : "fa-temperature-quarter"
-          } fa-fw detail-icon`;
-        tempIcon.setAttribute("height", "15");
-        tempIcon.setAttribute("width", "15");
-
-        let tempText = document.createElement("span");
-        tempText.className = "detail-text";
-        tempText.innerHTML = this.convertTemp(this.forecast[i].temp);
-
-        let tempBr = document.createElement("br");
-
-        // Build up the details regarding precipitation %
-        let rainIcon = document.createElement("i");
-        rainIcon.className = "fa fa-umbrella fa-fw detail-icon";
-        rainIcon.setAttribute("height", "15");
-        rainIcon.setAttribute("width", "15");
-
-        let rainText = document.createElement("span");
-        rainText.className = "detail-text";
-        rainText.innerHTML = `${this.forecast[i].pop} %`;
-
-        let rainBr = document.createElement("br");
-
-        // Removed per https://www.weather.gov/media/notification/pdf_2023_24/scn24-55_api_v1.13.pdf 
-        // Build up the details regarding humidity %
-        // let humidIcon = document.createElement("i");
-        // humidIcon.className = "fa fa-droplet fa-fw detail-icon";
-        // humidIcon.setAttribute("height", "15");
-        // humidIcon.setAttribute("width", "15");
-
-        // let humidText = document.createElement("span");
-        // humidText.className = "detail-text";
-        // humidText.innerHTML = `${this.forecast[i].humid} %`;
-
-        // let humidBr = document.createElement("br");
-
-        // Build up the details regarding wind
-        let windIcon = document.createElement("i");
-        windIcon.className = "fa fa-wind fa-fw detail-icon";
-        windIcon.setAttribute("height", "15");
-        windIcon.setAttribute("width", "15");
-
-        let windText = document.createElement("span");
-        windText.className = "detail-text";
-        windText.innerHTML = `${this.convertWindSpeed(this.forecast[i].wspd)} ${this.forecast[i].wdir
-          }`;
-
-        // Now assemble the details
-        forecastDetail.appendChild(tempIcon);
-        forecastDetail.appendChild(tempText);
-        forecastDetail.appendChild(tempBr);
-        forecastDetail.appendChild(rainIcon);
-        forecastDetail.appendChild(rainText);
-        forecastDetail.appendChild(rainBr);
-        // Removed per https://www.weather.gov/media/notification/pdf_2023_24/scn24-55_api_v1.13.pdf 
-        // forecastDetail.appendChild(humidIcon);
-        // forecastDetail.appendChild(humidText);
-        // forecastDetail.appendChild(humidBr);
-        forecastDetail.appendChild(windIcon);
-        forecastDetail.appendChild(windText);
-
-        forecastRow4.appendChild(forecastDetail);
-      }
-
-      wrapper.appendChild(forecastRow1);
-      wrapper.appendChild(forecastRow2);
-      wrapper.appendChild(forecastRow3);
-      wrapper.appendChild(forecastRow4);
     } else {
-      // Otherwise lets just use a simple div
+      // If data is still loading, display a loading message
       wrapper = document.createElement("div");
       wrapper.innerHTML = "Loading ...";
     }
 
     return wrapper;
   },
+
 
   getWeatherData: function (_this) {
     // Make the initial request to the helper then set up the timer to perform the updates
