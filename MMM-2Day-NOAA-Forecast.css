@@ -1,54 +1,111 @@
-/*
+/* Main forecast container */
 .forecast {
-  display: flex;
+  width: 100%;
+  border-collapse: collapse;
   text-align: center;
-}
-*/
-
-.forecast th {
-  display: table-cell;
-  border-bottom: 1pt solid var(--color-text-dimmed);
+  margin: 0 auto;
+  font-family: 'Arial', sans-serif;
 }
 
-.forecast td {
-  display: table-cell;
-}
-
+/* Table headers */
 .forecast-title {
+  background-color: var(--color-background);
+  color: var(--color-text-bright);
+  font-size: 14px;
+  font-weight: bold;
   text-transform: uppercase;
-  font-size: var(--font-size-xsmall);
-  font-family: var(--font-primary), Arial, Helvetica, sans-serif;
-  font-weight: 400;
+  padding: 10px;
+  border-bottom: 2px solid var(--color-border);
 }
 
+/* Forecast icon cells */
 .forecast-day-night {
-  text-align: center;
+  padding: 5px;
+  vertical-align: middle;
 }
 
 .forecast-icon {
-  margin-top: 5px;
+  width: 50px;
+  height: 50px;
+  margin: 5px auto;
 }
 
+/* Forecast text descriptions */
 .forecast-text {
-  width: 100px;
   font-size: 12px;
-  text-align: center;
-  vertical-align: top;
+  color: var(--color-text-dimmed);
+  padding: 5px;
+  line-height: 1.4;
 }
 
+/* Forecast details (temperature, wind, precipitation) */
 .forecast-detail {
-  text-align: left;
   font-size: 14px;
-  padding-left: 5px;
-  line-height: 1.3;
+  color: var(--color-text-bright);
+  text-align: left;
+  padding: 5px;
+  line-height: 1.6;
 }
 
 .detail-icon {
-  text-align: center;
+  margin-right: 5px;
 }
 
 .detail-text {
-  text-align: left;
-  font-size: 14px;
-  margin-left: 5px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Add spacing and highlight */
+.forecast td {
+  border: 1px solid var(--color-border);
+  padding: 8px;
+}
+
+.forecast th,
+.forecast td {
+  border-spacing: 5px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .forecast {
+    font-size: 10px;
+  }
+
+  .forecast-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .forecast-title {
+    font-size: 12px;
+    padding: 8px;
+  }
+
+  .forecast-detail {
+    font-size: 12px;
+    line-height: 1.4;
+  }
+}
+
+@media (max-width: 480px) {
+  .forecast {
+    font-size: 9px;
+  }
+
+  .forecast-title {
+    font-size: 11px;
+    padding: 5px;
+  }
+
+  .forecast-icon {
+    width: 35px;
+    height: 35px;
+  }
+
+  .forecast-detail {
+    font-size: 11px;
+    line-height: 1.2;
+  }
 }

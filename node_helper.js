@@ -1,10 +1,3 @@
-/* MagicMirror² Module: MMM-2Day-NOAA-Forecast helper
- * Version: 0.2.0
- *
- * By Jinserk Baik https://github.com/jinserk/
- * MIT Licensed.
- */
-
 const url = require("url");
 const NodeHelper = require("node_helper");
 const Log = require("logger");
@@ -28,41 +21,43 @@ module.exports = NodeHelper.create({
         _this.getForecastData(payload, forecastUrl);
       })
       .catch(function (error) {
-        Log.error(error);
+        Log.error("Error fetching weather data:", error);
       });
   },
 
   getForecastData: function (url1, url2) {
     let _this = this;
-    let forecast = [];
 
     fetch(url2)
       .then(async (response) => {
-        if (response.status === 200) {
-          const data = await response.json();
-          const periods = data.properties.periods;
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
 
-          if (periods.length > 4) {
-            forecast = _this.parseData(periods);
-            Log.info("Got forecast data from api.weather.gov");
-          } else {
-            Log.error("Got forecast data but something wrong");
-            forecast = _this.fillEmptyData();
-          }
+        const data = await response.json();
+        const periods = data.properties.periods;
+
+        if (periods && periods.length > 0) {
+          const forecast = _this.parseData(periods);
+          Log.info("Got full forecast data from api.weather.gov");
+
+          _this.sendSocketNotification("GOT-2DAY-NOAA-FORECAST", {
+            url: url1,
+            forecast: forecast,
+          });
         } else {
-          Log.error("Error fetching forecast data:", response.status);
-          forecast = _this.fillEmptyData();
+          Log.error("Forecast data is empty or invalid");
+          _this.sendSocketNotification("GOT-2DAY-NOAA-FORECAST", {
+            url: url1,
+            forecast: _this.fillEmptyData(),
+          });
         }
       })
       .catch(function (error) {
         Log.error("Error fetching forecast data:", error);
-        forecast = _this.fillEmptyData();
-      })
-      .finally(function () {
-        //Log.info(forecast);
         _this.sendSocketNotification("GOT-2DAY-NOAA-FORECAST", {
           url: url1,
-          forecast: forecast
+          forecast: _this.fillEmptyData(),
         });
       });
   },
@@ -70,7 +65,7 @@ module.exports = NodeHelper.create({
   parseData: function (data) {
     let forecast = [];
 
-    data.slice(0, 4).forEach((element, i) => {
+    data.forEach((element) => {
       forecast.push({
         name: element.name,
         date: element.startTime,
@@ -78,17 +73,13 @@ module.exports = NodeHelper.create({
         icon: this.parseIcon(element.icon),
         conditions: element.shortForecast,
         temp: element.temperature,
-        pop: element.probabilityOfPrecipitation.value
-          ? element.probabilityOfPrecipitation.value
-          : 0,
-        // Removed per https://www.weather.gov/media/notification/pdf_2023_24/scn24-55_api_v1.13.pdf 
-        // humid: element.relativeHumidity.value,
+        pop: element.probabilityOfPrecipitation?.value || 0,
         wspd: element.windSpeed
           .replace("to ", "")
           .split(" ")
           .slice(0, -1)
           .map(Number),
-        wdir: element.windDirection
+        wdir: element.windDirection,
       });
     });
 
@@ -109,38 +100,30 @@ module.exports = NodeHelper.create({
       } else if (d1.length === 2) {
         return parseInt(d1[1], 10) > 50 ? d1[0] : d0[0];
       } else {
-        // no pop, so choose the first
         return d0[0];
       }
     }
   },
 
   fillEmptyData: function () {
-    let forecast = [];
-
-    for (let i = 0; i < 4; i++) {
-      forecast.push({
-        name: "--",
-        date: "--",
-        isDay: "--",
-        icon: ["not_available"],
-        conditions: "No weather data",
+    return [
+      {
+        name: "No Data",
+        date: "N/A",
+        isDay: false,
+        icon: "not_available",
+        conditions: "No forecast available",
         temp: "--",
         pop: "--",
-        // Removed per https://www.weather.gov/media/notification/pdf_2023_24/scn24-55_api_v1.13.pdf 
-        // humid: "--",
         wspd: ["--"],
-        wdir: "--"
-      });
-    }
-
-    return forecast;
+        wdir: "--",
+      },
+    ];
   },
 
   socketNotificationReceived: function (notification, payload) {
-    // Check this is for us and if it is let's get the weather data
     if (notification === "GET-2DAY-NOAA-FORECAST") {
       this.getWeatherData(payload);
     }
-  }
+  },
 });
